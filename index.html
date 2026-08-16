@@ -1,0 +1,842 @@
+import { useState } from "react";
+
+// ─── ELDA Configuration ───────────────────────────────────────────────────────
+const ELDA_CONFIG = [
+  {
+    id: 1, name: "Wellbeing", tag: "KEY ELDA",
+    color: "#B71C1C", light: "#FFEBEE", mid: "#EF9A9A",
+    domain: "Physical / Social-Emotional / Self-Help",
+    elom: "Gross Motor Development • Fine Motor Coordination & Visual Motor Integration",
+    ncf: "Physical, emotional, and social health. Children must feel safe, nourished, and secure before they can learn.",
+  },
+  {
+    id: 2, name: "Identity and Belonging",
+    color: "#4527A0", light: "#EDE7F6", mid: "#B39DDB",
+    domain: "Social & Emotional / Moral & Ethical",
+    elom: "Social-Emotional Functioning",
+    ncf: "Self-awareness, confidence, cultural identity, social connections, and a sense of belonging.",
+  },
+  {
+    id: 3, name: "Communication",
+    color: "#0D47A1", light: "#E3F2FD", mid: "#90CAF9",
+    domain: "Language",
+    elom: "Emergent Literacy and Language",
+    ncf: "Language, literacy, listening, speaking, early reading and writing skills.",
+  },
+  {
+    id: 4, name: "Exploring Mathematics",
+    color: "#E65100", light: "#FFF3E0", mid: "#FFCC80",
+    domain: "Cognitive",
+    elom: "Emergent Numeracy and Mathematics",
+    ncf: "Counting, sorting, patterns, shapes, measurement, and number sense.",
+  },
+  {
+    id: 5, name: "Creativity",
+    color: "#1B5E20", light: "#E8F5E9", mid: "#A5D6A7",
+    domain: "Creative & Artistic",
+    elom: "Cognition & Executive Functioning",
+    ncf: "Arts, music, drama, movement, imagination, and expressive arts.",
+  },
+  {
+    id: 6, name: "Knowledge of the World",
+    color: "#006064", light: "#E0F7FA", mid: "#80DEEA",
+    domain: "Cognitive / Environmental",
+    elom: "Cognition & Executive Functioning",
+    ncf: "Science exploration, nature, community, technology, and inquiry.",
+  },
+];
+
+// ─── Observations by Age Group ────────────────────────────────────────────────
+const OBS = {
+  "4-5": {
+    1: [
+      {
+        sub: "Health & Nutrition",
+        items: [
+          "Child eats and drinks well/appropriately",
+          "Road to Health Card is up to date",
+          "Child appears clean, rested, and cared for",
+        ],
+      },
+      {
+        sub: "Gross Motor Development (ELOM)",
+        items: [
+          "Can walk and run confidently",
+          "Can jump forward with 2 feet together",
+          "Can walk 3 steps on tiptoe",
+          "Can kick a ball",
+          "Can catch a ball",
+          "Can balance on one leg for the count of 3",
+          "Can hop on one leg, at least 8 hops",
+          "Can throw and catch a ball",
+          "Can do 3 jumps with 2 feet together",
+        ],
+      },
+      {
+        sub: "Fine Motor & Visual Motor (ELOM)",
+        items: [
+          "Can thread 10 or more beads onto a string",
+          "Can cut on the lines",
+          "Can glue neatly",
+          "Can hold a pencil/crayon with correct grip",
+          "Can draw an age-appropriate person (head, body, arms, legs)",
+        ],
+      },
+    ],
+    2: [
+      {
+        sub: "Self-Awareness & Identity",
+        items: [
+          "Knows their name and age",
+          "Can say where they live / family details",
+          "Can talk and be understood by adults",
+          "Shows confidence in expressing themselves",
+        ],
+      },
+      {
+        sub: "Social Skills & Belonging",
+        items: [
+          "Happy being around other children",
+          "Comfortable in group activities",
+          "Can follow the routine and rules of the school",
+          "Can manage what is expected in the daily programme",
+          "Can share and take turns",
+          "Can concentrate on their own and in groups",
+          "Relates well with teachers",
+          "Shows respect for those who are different from themselves",
+          "Seeks help from adults when needed",
+        ],
+      },
+    ],
+    3: [
+      {
+        sub: "Speaking & Listening",
+        items: [
+          "Can speak clearly and be understood",
+          "Can use simple sentences (3–5 words)",
+          "Joins in with songs and rhymes",
+          "Enjoys listening to stories",
+          "Can follow 3–4 simple instructions",
+          "Can answer 'what', 'who', 'where' questions",
+          "Can retell a short story in own words",
+        ],
+      },
+      {
+        sub: "Early Literacy (ELOM)",
+        items: [
+          "Shows interest in books and looking at picture books",
+          "Can identify their own name in print",
+          "Recognises some letters (especially in own name)",
+          "Shows interest in writing and mark-making",
+          "Understands that print carries meaning",
+          "Can identify the first sound in their name",
+        ],
+      },
+    ],
+    4: [
+      {
+        sub: "Number Sense (ELOM)",
+        items: [
+          "Can recognise their own name in print",
+          "Can identify numbers up to 10",
+          "Can count 5 objects (1-to-1 correspondence)",
+          "Can count up to 10 or more",
+          "Can remember 4 numbers in a sequence",
+          "Can repeat a 2-part clapping/rhythm pattern",
+          "Uses number language in everyday talk",
+        ],
+      },
+      {
+        sub: "Sorting, Shapes & Patterns (ELOM)",
+        items: [
+          "Can sort objects by colour",
+          "Can sort objects by shape or size",
+          "Can identify 3 or more basic shapes",
+          "Can identify 3 or more basic colours",
+          "Can follow a set of 4 basic instructions",
+          "Shows understanding of big/little, more/less, first/last",
+          "Can sequence 3 or more events or objects",
+        ],
+      },
+    ],
+    5: [
+      {
+        sub: "Expressive Arts",
+        items: [
+          "Takes interest in music, dance, rhythm, and dramatic activities",
+          "Enjoys make-believe play alone and with others",
+          "Enjoys working with visual art materials",
+          "Creates drawings or paintings with intention",
+          "Participates in drama and role-play activities",
+        ],
+      },
+      {
+        sub: "Imagination & Exploration",
+        items: [
+          "Takes interest in problem-solving activities",
+          "Explores their environment using their senses",
+          "Uses resources to make sense of their world",
+          "Investigates different types of objects",
+          "Is curious and asks questions ('what', 'why', 'how')",
+        ],
+      },
+    ],
+    6: [
+      {
+        sub: "Inquiry & Technology (ELOM Cognition)",
+        items: [
+          "Is a curious explorer and asks questions",
+          "Participates in activities about how things work",
+          "Shows understanding of time (morning/afternoon, yesterday/today/tomorrow)",
+          "Uses different tools and techniques to make and explore",
+          "Investigates different types of objects and their properties",
+        ],
+      },
+      {
+        sub: "World Awareness",
+        items: [
+          "Shows awareness of nature and the environment",
+          "Understands simple cause and effect relationships",
+          "Can talk about their community, family, and culture",
+          "Shows interest in living and non-living things",
+          "Demonstrates responsibility towards the environment",
+        ],
+      },
+    ],
+  },
+  "3-4": {
+    1: [
+      {
+        sub: "Health & Nutrition",
+        items: [
+          "Child eats and drinks well/appropriately",
+          "Road to Health Card is up to date",
+        ],
+      },
+      {
+        sub: "Gross Motor Development",
+        items: [
+          "Can run, stop, and change direction",
+          "Can jump with both feet off the ground",
+          "Can kick a large ball",
+          "Can climb low structures safely",
+          "Can walk on a line or beam",
+          "Can throw a ball with some aim",
+        ],
+      },
+      {
+        sub: "Fine Motor Skills",
+        items: [
+          "Can thread 4 large beads",
+          "Can build a 4-block tower",
+          "Can fit 4 small items together",
+          "Can hold a crayon with fingers (not fist)",
+          "Enjoys drawing and mark-making",
+          "Can turn pages of a book one at a time",
+        ],
+      },
+    ],
+    2: [
+      {
+        sub: "Self-Awareness",
+        items: [
+          "Knows their own name",
+          "Can say whether they are a boy or girl",
+          "Recognises themselves in a mirror or photo",
+          "Begins to show independence in self-care",
+        ],
+      },
+      {
+        sub: "Social Skills",
+        items: [
+          "Enjoys playing near and with other children",
+          "Comfortable around familiar adults",
+          "Can take turns with support from adult",
+          "Can share toys with encouragement",
+          "Follows basic classroom rules",
+          "Can separate from caregiver without distress",
+          "Beginning to show empathy for others",
+        ],
+      },
+    ],
+    3: [
+      {
+        sub: "Speaking & Listening",
+        items: [
+          "Can use simple 2–4 word sentences",
+          "Joins in with songs and rhymes",
+          "Listens to short stories with interest",
+          "Can point to pictures in a book when asked",
+          "Can follow 2-step instructions",
+          "Answers simple 'what' and 'where' questions",
+          "Vocabulary is growing rapidly",
+        ],
+      },
+      {
+        sub: "Early Literacy",
+        items: [
+          "Shows interest in books and pictures",
+          "Holds a book the right way up",
+          "Pretends to read (tells story from pictures)",
+          "Shows interest in their own name",
+        ],
+      },
+    ],
+    4: [
+      {
+        sub: "Number & Counting",
+        items: [
+          "Can count 1–5 objects",
+          "Recognises some numbers",
+          "Understands 'more' and 'less' / 'big' and 'small'",
+          "Can match objects that are the same",
+          "Can say which group has more",
+        ],
+      },
+      {
+        sub: "Sorting & Shapes",
+        items: [
+          "Can sort objects by one attribute (colour or size)",
+          "Can identify 3 basic colours",
+          "Can identify 2 basic shapes (circle, square)",
+          "Can sequence 2–3 simple events",
+          "Understands 'first', 'next', 'last'",
+        ],
+      },
+    ],
+    5: [
+      {
+        sub: "Expressive Arts",
+        items: [
+          "Enjoys music and movement activities",
+          "Engages in pretend play regularly",
+          "Uses art materials (crayons, paint, clay) with interest",
+          "Creates simple drawings (circles, lines, scribbles with meaning)",
+          "Sings familiar songs and fills in words",
+        ],
+      },
+      {
+        sub: "Imagination",
+        items: [
+          "Explores materials with curiosity and repetition",
+          "Shows interest in how things work",
+          "Enjoys sensory play (sand, water, play dough)",
+          "Begins to ask 'why' questions",
+        ],
+      },
+    ],
+    6: [
+      {
+        sub: "Inquiry",
+        items: [
+          "Shows curiosity about their environment",
+          "Explores objects with all 5 senses",
+          "Asks simple questions about the world",
+          "Shows interest in animals and plants",
+        ],
+      },
+      {
+        sub: "World Awareness",
+        items: [
+          "Recognises familiar places (home, school)",
+          "Shows interest in simple cause and effect",
+          "Participates in nature and outdoor activities",
+          "Begins to understand daily routine and time",
+        ],
+      },
+    ],
+  },
+  "18-36": {
+    1: [
+      {
+        sub: "Health & Nutrition",
+        items: [
+          "Child eats and drinks well/appropriately",
+          "Road to Health Card is up to date",
+          "Child appears healthy and well cared for",
+        ],
+      },
+      {
+        sub: "Gross Motor Development",
+        items: [
+          "Can walk independently and confidently",
+          "Can walk and run",
+          "Can climb stairs with support",
+          "Can kick a large ball",
+          "Can jump with both feet (attempting/achieving)",
+          "Can pull and push objects",
+        ],
+      },
+      {
+        sub: "Fine Motor Skills",
+        items: [
+          "Can stack 3–4 blocks",
+          "Can scribble with a crayon",
+          "Can turn pages of a book",
+          "Can pick up small objects using finger and thumb",
+          "Can hold a cup and drink independently",
+        ],
+      },
+    ],
+    2: [
+      {
+        sub: "Self-Awareness",
+        items: [
+          "Recognises themselves in a mirror",
+          "Can say their own name when asked",
+          "Shows awareness of own needs (hungry, tired, wet)",
+          "Beginning to assert independence ('me do it')",
+        ],
+      },
+      {
+        sub: "Social Skills",
+        items: [
+          "Plays alongside other children (parallel play)",
+          "Shows attachment to familiar caregivers",
+          "Beginning to notice when others are upset",
+          "Follows simple 1-step instructions",
+          "Beginning to show interest in other children",
+        ],
+      },
+    ],
+    3: [
+      {
+        sub: "Speaking & Listening",
+        items: [
+          "Can use 5–50+ words (growing vocabulary)",
+          "Can use simple 2-word phrases ('more juice', 'daddy go')",
+          "Points to objects or pictures when named",
+          "Joins in with familiar songs and rhymes",
+          "Listens briefly to short stories",
+          "Follows simple 1-step instructions",
+          "Understands simple questions ('Where is Mama?')",
+        ],
+      },
+    ],
+    4: [
+      {
+        sub: "Early Number & Sorting",
+        items: [
+          "Shows interest in counting objects (points and vocalises)",
+          "Can match objects that are the same",
+          "Begins to sort objects by colour with support",
+          "Understands 'one' and 'more/many'",
+          "Puts objects in/out of containers repeatedly",
+        ],
+      },
+    ],
+    5: [
+      {
+        sub: "Play & Expression",
+        items: [
+          "Enjoys music, clapping, and movement with others",
+          "Begins to engage in simple pretend play (feeding doll)",
+          "Shows interest in art materials (finger paint, clay, crayons)",
+          "Explores materials with curiosity and repetition",
+          "Enjoys looking at picture books",
+        ],
+      },
+    ],
+    6: [
+      {
+        sub: "Exploration & Discovery",
+        items: [
+          "Explores objects by touching, shaking, banging, dropping",
+          "Shows curiosity about their surroundings",
+          "Notices and reacts to new objects or events",
+          "Begins to show interest in animals and nature",
+          "Points to interesting things and looks to adult to share",
+        ],
+      },
+    ],
+  },
+};
+
+// ─── Rating Badge Component ───────────────────────────────────────────────────
+function RatingCell({ value, selected, color, onSelect }) {
+  const isSelected = selected === value;
+  return (
+    <div onClick={onSelect} style={{
+      display: "flex", alignItems: "center", justifyContent: "center",
+      cursor: "pointer",
+    }}>
+      <div style={{
+        width: 28, height: 28, borderRadius: "50%", border: `2px solid ${isSelected ? color : "#ccc"}`,
+        background: isSelected ? color : "transparent",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 12, fontWeight: 700,
+        color: isSelected ? "white" : "#999",
+        transition: "all 0.15s ease",
+        userSelect: "none",
+      }}>
+        {value === "No" ? "1" : value === "Trying" ? "2" : "3"}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+export default function AssessmentForm() {
+  const [ageGroup, setAgeGroup] = useState("4-5");
+  const [childInfo, setChildInfo] = useState({
+    name: "", dob: "", gender: "", centre: "", cpf: "",
+    assessorName: "", assessmentDate: "", quarter: "",
+  });
+  const [ratings, setRatings] = useState({});
+  const [narratives, setNarratives] = useState({});
+  const [summary, setSummary] = useState("");
+  const [nextSteps, setNextSteps] = useState("");
+  const [activeSection, setActiveSection] = useState(null);
+
+  const key = (eldaId, si, ii) => `${eldaId}-${si}-${ii}`;
+  const getRating = (eldaId, si, ii) => ratings[key(eldaId, si, ii)] || null;
+  const setRating = (eldaId, si, ii, val) =>
+    setRatings(prev => ({ ...prev, [key(eldaId, si, ii)]: prev[key(eldaId, si, ii)] === val ? null : val }));
+  const getNarrative = (eldaId, si, ii) => narratives[key(eldaId, si, ii)] || "";
+  const setNarrative = (eldaId, si, ii, val) =>
+    setNarratives(prev => ({ ...prev, [key(eldaId, si, ii)]: val }));
+
+  const updateChild = (field, val) =>
+    setChildInfo(prev => ({ ...prev, [field]: val }));
+
+  // Calculate ELDA completion stats
+  const getELDAStats = (eldaId) => {
+    const sections = OBS[ageGroup]?.[eldaId] || [];
+    let total = 0, rated = 0, yes = 0;
+    sections.forEach((sec, si) => sec.items.forEach((_, ii) => {
+      total++;
+      const r = getRating(eldaId, si, ii);
+      if (r) rated++;
+      if (r === "Yes") yes++;
+    }));
+    return { total, rated, yes, pct: total ? Math.round((rated / total) * 100) : 0 };
+  };
+
+  const ageGroups = [
+    { id: "18-36", label: "18–36 Months", sub: "Moving On" },
+    { id: "3-4", label: "3–4 Years", sub: "Advancing Further" },
+    { id: "4-5", label: "4–5 Years", sub: "Towards Grade R" },
+  ];
+
+  const inputStyle = {
+    width: "100%", padding: "7px 10px", border: "1.5px solid #DDD",
+    borderRadius: 6, fontSize: 13, boxSizing: "border-box",
+    fontFamily: "inherit", outline: "none", background: "white",
+    transition: "border-color 0.2s",
+  };
+
+  return (
+    <div style={{ fontFamily: "'Segoe UI', system-ui, sans-serif", maxWidth: 960, margin: "0 auto", padding: "20px 16px", background: "#F5F4F0", minHeight: "100vh" }}>
+
+      {/* ── HEADER ── */}
+      <div style={{
+        background: "linear-gradient(135deg, #1B4332 0%, #2D6A4F 50%, #40916C 100%)",
+        color: "white", padding: "22px 28px", borderRadius: 14, marginBottom: 18,
+        boxShadow: "0 4px 20px rgba(27,67,50,0.3)",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
+          <div>
+            <div style={{ fontSize: 10, letterSpacing: 3, opacity: 0.75, marginBottom: 5, fontWeight: 600 }}>
+              NCF ALIGNED · ELOM STANDARD · 6 ELDAs
+            </div>
+            <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, lineHeight: 1.1 }}>
+              Quarterly Child Observation
+            </h1>
+            <p style={{ margin: "6px 0 0", fontSize: 12.5, opacity: 0.85 }}>
+              Formative Assessment · All Developmental Domains · Observation-Based
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {["NCF", "ELOM", "6 ELDAs"].map(badge => (
+              <span key={badge} style={{
+                background: "rgba(255,255,255,0.18)", border: "1px solid rgba(255,255,255,0.4)",
+                borderRadius: 20, padding: "4px 12px", fontSize: 11, fontWeight: 700, color: "white",
+              }}>{badge}</span>
+            ))}
+          </div>
+        </div>
+
+        {/* IMPORTANT REMINDER */}
+        <div style={{ marginTop: 14, background: "rgba(255,255,255,0.12)", borderRadius: 8, padding: "10px 14px", fontSize: 12, lineHeight: 1.5 }}>
+          <strong>⚠ Critical Reminder:</strong> Assessment at this stage is ALWAYS <strong>formative</strong>. There are
+          <strong> no pass or fail grades</strong>. A child cannot fail ECD. Assessment is done through observation to
+          SUPPORT development — not to judge the child.
+        </div>
+      </div>
+
+      {/* ── AGE GROUP SELECTOR ── */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: "#666", marginBottom: 8, textTransform: "uppercase", letterSpacing: 1 }}>
+          Select Age Group / Phase
+        </div>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          {ageGroups.map(ag => (
+            <button key={ag.id} onClick={() => { setAgeGroup(ag.id); setRatings({}); setNarratives({}); }}
+              style={{
+                padding: "10px 20px", borderRadius: 10,
+                border: ageGroup === ag.id ? "2.5px solid #1B4332" : "2px solid #D5D2CC",
+                background: ageGroup === ag.id ? "#1B4332" : "white",
+                color: ageGroup === ag.id ? "white" : "#555",
+                cursor: "pointer", fontWeight: 700, fontSize: 13,
+                transition: "all 0.2s", textAlign: "left",
+                boxShadow: ageGroup === ag.id ? "0 2px 8px rgba(27,67,50,0.3)" : "none",
+              }}>
+              <div>{ag.label}</div>
+              <div style={{ fontSize: 10, fontWeight: 400, opacity: 0.8, marginTop: 2 }}>{ag.sub}</div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── CHILD INFORMATION ── */}
+      <div style={{ background: "white", borderRadius: 12, padding: 20, marginBottom: 18, border: "1px solid #E0DDD8", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+          <div style={{ width: 4, height: 20, background: "#1B4332", borderRadius: 2 }} />
+          <h3 style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#1B4332", textTransform: "uppercase", letterSpacing: 1 }}>Child Information</h3>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
+          {[
+            { key: "name", label: "Child Name & Surname", placeholder: "Full name..." },
+            { key: "dob", label: "Date of Birth", type: "date" },
+            { key: "gender", label: "Gender", type: "select", options: ["", "Male", "Female"] },
+            { key: "quarter", label: "Quarter / Term", type: "select", options: ["", "Quarter 1", "Quarter 2", "Quarter 3", "Quarter 4"] },
+            { key: "centre", label: "Centre Name", placeholder: "ECD centre name..." },
+            { key: "cpf", label: "CPF Name & Surname", placeholder: "Parent/caregiver name..." },
+            { key: "assessorName", label: "Practitioner / Assessor", placeholder: "Your name..." },
+            { key: "assessmentDate", label: "Assessment Date", type: "date" },
+          ].map(f => (
+            <div key={f.key}>
+              <label style={{ fontSize: 11, color: "#777", display: "block", marginBottom: 4, fontWeight: 600 }}>{f.label}</label>
+              {f.type === "select" ? (
+                <select value={childInfo[f.key]} onChange={e => updateChild(f.key, e.target.value)} style={inputStyle}>
+                  {f.options.map(o => <option key={o} value={o}>{o || "Select..."}</option>)}
+                </select>
+              ) : (
+                <input type={f.type || "text"} value={childInfo[f.key]}
+                  onChange={e => updateChild(f.key, e.target.value)}
+                  placeholder={f.placeholder || ""}
+                  style={inputStyle} />
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── RATING KEY ── */}
+      <div style={{ background: "white", borderRadius: 10, padding: "12px 20px", marginBottom: 18, border: "1px solid #E0DDD8", display: "flex", gap: 24, flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ fontSize: 11, fontWeight: 800, color: "#555", textTransform: "uppercase", letterSpacing: 1 }}>Rating Key:</div>
+        {[
+          { val: "No", num: 1, label: "Not Yet Observed", color: "#C62828" },
+          { val: "Trying", num: 2, label: "Emerging / Developing", color: "#E65100" },
+          { val: "Yes", num: 3, label: "Consistently Observed", color: "#2E7D32" },
+        ].map(r => (
+          <div key={r.val} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 26, height: 26, borderRadius: "50%", background: r.color, display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: 12, fontWeight: 700 }}>{r.num}</div>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#333" }}>{r.val}</div>
+              <div style={{ fontSize: 10, color: "#777" }}>{r.label}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── ELDA SECTIONS ── */}
+      {ELDA_CONFIG.map(elda => {
+        const sections = OBS[ageGroup]?.[elda.id] || [];
+        const stats = getELDAStats(elda.id);
+        const isOpen = activeSection === elda.id || activeSection === null;
+
+        return (
+          <div key={elda.id} style={{ marginBottom: 16, borderRadius: 12, overflow: "hidden", border: `1.5px solid ${elda.mid}`, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+
+            {/* ELDA Header */}
+            <div
+              style={{ background: elda.color, color: "white", padding: "14px 20px", cursor: "pointer" }}
+              onClick={() => setActiveSection(activeSection === elda.id ? null : elda.id)}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
+                <div>
+                  <div style={{ fontSize: 10, letterSpacing: 2.5, opacity: 0.8, fontWeight: 600, marginBottom: 3 }}>
+                    ELDA {elda.id} {elda.tag ? `· ${elda.tag}` : ""}
+                  </div>
+                  <div style={{ fontSize: 17, fontWeight: 800 }}>{elda.name}</div>
+                  <div style={{ fontSize: 10.5, opacity: 0.85, marginTop: 4 }}>
+                    <span style={{ background: "rgba(255,255,255,0.18)", borderRadius: 4, padding: "2px 7px", marginRight: 6 }}>Domain: {elda.domain}</span>
+                    <span style={{ background: "rgba(255,255,255,0.18)", borderRadius: 4, padding: "2px 7px" }}>ELOM: {elda.elom}</span>
+                  </div>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ fontSize: 22, fontWeight: 800 }}>{stats.rated}/{stats.total}</div>
+                    <div style={{ fontSize: 9, opacity: 0.8 }}>RATED</div>
+                  </div>
+                  <div style={{ fontSize: 18, opacity: 0.8 }}>{isOpen ? "▲" : "▼"}</div>
+                </div>
+              </div>
+
+              {/* NCF alignment */}
+              <div style={{ marginTop: 8, fontSize: 11, opacity: 0.8, fontStyle: "italic" }}>
+                📋 NCF: {elda.ncf}
+              </div>
+
+              {/* Progress bar */}
+              <div style={{ marginTop: 10, background: "rgba(255,255,255,0.2)", borderRadius: 4, height: 5, overflow: "hidden" }}>
+                <div style={{ height: "100%", background: "rgba(255,255,255,0.9)", width: `${stats.pct}%`, transition: "width 0.3s ease" }} />
+              </div>
+            </div>
+
+            {/* Table - collapsible */}
+            {(activeSection === elda.id || activeSection === null) && (
+              <div style={{ background: "white" }}>
+                {/* Column Headers */}
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 52px 52px 52px 220px",
+                  padding: "8px 16px", gap: 6,
+                  background: elda.light,
+                  borderBottom: `2px solid ${elda.mid}`,
+                  fontSize: 10.5, fontWeight: 800, color: elda.color,
+                  textTransform: "uppercase", letterSpacing: 0.8,
+                  alignItems: "center",
+                }}>
+                  <div>Observation</div>
+                  <div style={{ textAlign: "center" }}>No<br /><span style={{ fontWeight: 400, fontSize: 9 }}>Not Yet</span></div>
+                  <div style={{ textAlign: "center" }}>Trying<br /><span style={{ fontWeight: 400, fontSize: 9 }}>Emerging</span></div>
+                  <div style={{ textAlign: "center" }}>Yes<br /><span style={{ fontWeight: 400, fontSize: 9 }}>Achieved</span></div>
+                  <div>What did I see / hear?</div>
+                </div>
+
+                {sections.map((sec, si) => (
+                  <div key={si}>
+                    {/* Sub-section label */}
+                    <div style={{
+                      background: elda.light, padding: "6px 16px",
+                      fontSize: 11, fontWeight: 800, color: elda.color,
+                      borderTop: si > 0 ? `1px solid ${elda.mid}` : "none",
+                      display: "flex", alignItems: "center", gap: 6,
+                    }}>
+                      <span style={{ opacity: 0.6 }}>▸</span> {sec.sub}
+                    </div>
+
+                    {sec.items.map((item, ii) => {
+                      const rating = getRating(elda.id, si, ii);
+                      const rowBg = ii % 2 === 0 ? "white" : "#FAFAF8";
+                      return (
+                        <div key={ii} style={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 52px 52px 52px 220px",
+                          padding: "8px 16px", gap: 6,
+                          background: rating ? `${elda.light}88` : rowBg,
+                          borderBottom: "1px solid #F0EEE9",
+                          alignItems: "center",
+                          transition: "background 0.15s",
+                        }}>
+                          <div style={{ fontSize: 12.5, color: "#2A2A2A", lineHeight: 1.4 }}>{item}</div>
+                          {["No", "Trying", "Yes"].map(val => (
+                            <RatingCell
+                              key={val}
+                              value={val}
+                              selected={rating}
+                              color={val === "No" ? "#C62828" : val === "Trying" ? "#E65100" : "#2E7D32"}
+                              onSelect={() => setRating(elda.id, si, ii, val)}
+                            />
+                          ))}
+                          <input
+                            type="text"
+                            placeholder="Write what you observed..."
+                            value={getNarrative(elda.id, si, ii)}
+                            onChange={e => setNarrative(elda.id, si, ii, e.target.value)}
+                            style={{
+                              ...inputStyle, fontSize: 11.5, padding: "5px 8px",
+                              border: `1.5px solid ${elda.mid}`,
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+
+      {/* ── SUMMARY SECTION ── */}
+      <div style={{ background: "white", borderRadius: 12, padding: 22, marginBottom: 16, border: "1.5px solid #D0CDC7", boxShadow: "0 1px 4px rgba(0,0,0,0.05)" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+          <div style={{ width: 4, height: 20, background: "#1B4332", borderRadius: 2 }} />
+          <h3 style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#1B4332", textTransform: "uppercase", letterSpacing: 1 }}>
+            Overall Summary & Next Steps
+          </h3>
+        </div>
+
+        {/* ELDA Progress Overview */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: 10, marginBottom: 18 }}>
+          {ELDA_CONFIG.map(elda => {
+            const s = getELDAStats(elda.id);
+            return (
+              <div key={elda.id} style={{
+                border: `1.5px solid ${elda.mid}`, borderRadius: 8,
+                padding: "10px 12px", background: elda.light,
+              }}>
+                <div style={{ fontSize: 9.5, fontWeight: 800, color: elda.color, letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>
+                  ELDA {elda.id}
+                </div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#333", marginBottom: 6 }}>{elda.name}</div>
+                <div style={{ background: "#E0DDD8", borderRadius: 3, height: 6, overflow: "hidden" }}>
+                  <div style={{ height: "100%", background: elda.color, width: `${s.pct}%`, transition: "width 0.5s" }} />
+                </div>
+                <div style={{ fontSize: 10, color: "#666", marginTop: 4 }}>
+                  {s.rated}/{s.total} rated · {s.yes} achieved
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14, marginBottom: 18 }}>
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "#555", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.8 }}>
+              Overall Observations & Strengths
+            </label>
+            <textarea
+              placeholder="Describe the child's overall progress, strengths, and areas of development observed this quarter..."
+              rows={5} value={summary} onChange={e => setSummary(e.target.value)}
+              style={{ ...inputStyle, resize: "vertical", lineHeight: 1.5 }}
+            />
+          </div>
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "#555", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.8 }}>
+              Next Steps & Support Strategies
+            </label>
+            <textarea
+              placeholder="What activities, support, or interventions will you plan to help this child's development next quarter? Any referrals needed?"
+              rows={5} value={nextSteps} onChange={e => setNextSteps(e.target.value)}
+              style={{ ...inputStyle, resize: "vertical", lineHeight: 1.5 }}
+            />
+          </div>
+        </div>
+
+        {/* Signature Lines */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 20 }}>
+          {["Practitioner / Assessor Signature", "Parent / Guardian Signature", "Centre Director / Principal"].map(sig => (
+            <div key={sig}>
+              <div style={{ borderBottom: "1.5px solid #BBB", height: 40, marginBottom: 6 }} />
+              <div style={{ fontSize: 10.5, color: "#666", fontWeight: 600 }}>{sig}</div>
+              <div style={{ fontSize: 10, color: "#aaa", marginTop: 3 }}>Date: ___________________</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* ── FOOTER ── */}
+      <div style={{ textAlign: "center", fontSize: 11, color: "#888", padding: "10px 0" }}>
+        <strong>NCF</strong> — National Curriculum Framework for Children from Birth to Four &nbsp;·&nbsp;
+        <strong>ELDAs</strong> — Early Learning and Development Areas &nbsp;·&nbsp;
+        <strong>ELOM</strong> — Early Learning Outcomes Measure<br />
+        <span style={{ opacity: 0.7 }}>For use by certified ECD practitioners only · Observation-based formative assessment</span>
+      </div>
+    </div>
+  );
+}
